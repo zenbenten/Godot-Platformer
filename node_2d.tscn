@@ -1,12 +1,3 @@
 [gd_scene format=3 uid="uid://bltf7qjkwevb3"]
 
-[node name="Node2D" type="Node2D"]
-
-[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
-
-[node name="ColorRect" type="ColorRect" parent="CharacterBody2D"]
-offset_right = 32.0
-offset_bottom = 32.0
-color = Color(1, 0, 1, 1)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]
+[node name="Area1" type="Node2D"]
