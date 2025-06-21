@@ -3,12 +3,13 @@
 [ext_resource type="Texture2D" uid="uid://cym5lijt1p145" path="res://Assets/Sprites/player.png" id="1_6cd4h"]
 [ext_resource type="Script" uid="uid://b7mmlyfkb7maq" path="res://Assets/Scripts/player_controller.gd" id="1_7dd06"]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_7dd06"]
-radius = 3.0
-height = 10.0
+[sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_7dd06"]
+points = PackedVector2Array(-1.70331, -7.407, 1.70331, -7.407, 1.70331, 1.2345, 0, 8.64149, -1.70331, 1.2345)
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_7dd06")
+speed = 5.0
+jump_power = 8.5
 
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(-15, -15)
@@ -27,5 +28,5 @@ region_rect = Rect2(0, 0, 16, 16)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -6)
-scale = Vector2(1, 1.17667)
-shape = SubResource("CapsuleShape2D_7dd06")
+scale = Vector2(1.17419, -0.810045)
+shape = SubResource("ConvexPolygonShape2D_7dd06")
