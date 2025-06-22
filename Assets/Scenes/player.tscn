@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://3wgak66vwyqw"]
 
-[ext_resource type="Texture2D" uid="uid://cym5lijt1p145" path="res://Assets/Sprites/player.png" id="1_6cd4h"]
 [ext_resource type="Script" uid="uid://b7mmlyfkb7maq" path="res://Assets/Scripts/player_controller.gd" id="1_7dd06"]
+[ext_resource type="Texture2D" uid="uid://cym5lijt1p145" path="res://Assets/Sprites/player.png" id="2_7dd06"]
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_7dd06"]
 points = PackedVector2Array(-1.70331, -7.407, 1.70331, -7.407, 1.70331, 1.2345, 0, 8.64149, -1.70331, 1.2345)
@@ -21,8 +21,9 @@ zoom = Vector2(6, 6)
 root_node = NodePath("../..")
 
 [node name="Sprite2D" type="Sprite2D" parent="AgentAnimator"]
-position = Vector2(0, -8)
-texture = ExtResource("1_6cd4h")
+position = Vector2(0, -7)
+scale = Vector2(0.927925, 0.927925)
+texture = ExtResource("2_7dd06")
 region_enabled = true
 region_rect = Rect2(0, 0, 16, 16)
 
