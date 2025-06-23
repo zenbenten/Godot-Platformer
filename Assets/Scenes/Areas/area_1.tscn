@@ -10,17 +10,81 @@ script/source = "extends Node2D
 @export var grapple_anchor: StaticBody2D
 @export var player_anchor: RigidBody2D
 @export var rope: Line2D
+@export var max_radius: float = 512.0  # Only attach to things within this radius
+
+var player_original_parent: Node = null
 
 func _ready():
+	# Safety check
+	if not grapple_anchor or not player_anchor or not rope:
+		push_error(\"Missing node references in GrapplingHookSystem!\")
+		return
+
 	add_to_group(\"grappling-hook-system\")
 
-	# Initialize the rope with 2 points (start and end)
+	# Hide rope and anchor initially
+	rope.visible = false
+	player_anchor.visible = false
+
+	# Initialize rope with 2 points
 	rope.points = [grapple_anchor.global_position, player_anchor.global_position]
 
+
 func _process(delta):
-	# Update the rope to connect the anchor and player anchor
-	rope.set_point_position(0, grapple_anchor.global_position)
-	rope.set_point_position(1, player_anchor.global_position)
+	if rope.visible and player_anchor.visible:
+		# Update rope endpoints
+		rope.set_point_position(0, grapple_anchor.global_position)
+		rope.set_point_position(1, player_anchor.global_position)
+
+		# Apply left/right swing input
+		if Input.is_action_pressed(\"move_right\"):
+			if player_anchor.linear_velocity.length() < 400:
+				player_anchor.apply_central_impulse(player_anchor.global_transform.x * 64)
+		elif Input.is_action_pressed(\"move_left\"):
+			if player_anchor.linear_velocity.length() < 400:
+				player_anchor.apply_central_impulse(player_anchor.global_transform.x * -64)
+
+		# Keep player centered on anchor
+		for child in player_anchor.get_children():
+			if \"position\" in child:
+				child.position = Vector2.ZERO
+		
+		for child in player_anchor.get_children():
+			if \"position\" in child:
+				child.position = Vector2(0,0)
+
+
+# API: Call this to attach the player
+func attach_player(player: Node2D) -> int:
+	if self.global_position.distance_to(player.global_position) > max_radius or player_original_parent != null:
+		return -1
+
+	player_original_parent = player.get_parent()
+	player_anchor.position = player.global_position
+	player.reparent(player_anchor)
+	player.position = Vector2.ZERO
+
+	# Update rope
+	rope.points = [grapple_anchor.global_position, player_anchor.global_position]
+	rope.visible = true
+	player_anchor.visible = true
+
+	return 0
+
+
+# API: Call this to detach the player
+func detach_player(player: Node2D) -> int:
+	if player_original_parent == null:
+		return -1
+
+	player.reparent(player_original_parent)
+	player.velocity = player_anchor.linear_velocity
+	player_original_parent = null
+
+	rope.visible = false
+	player_anchor.visible = false
+
+	return 0
 "
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ql8qi"]

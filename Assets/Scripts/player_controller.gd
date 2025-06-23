@@ -2,11 +2,12 @@ extends CharacterBody2D
 
 @export var speed = 10.0
 @export var jump_power = 10.0
+
 var speed_multiplier = 30.0
 var jump_multiplier = -30.0
 var direction = 0
 
-var has_grappling_hook: bool = false
+var has_grappling_hook: bool = true
 var is_grappling: bool = false
 
 func _physics_process(delta: float) -> void:
@@ -34,18 +35,23 @@ func handle_grappling(delta: float) -> void:
 	if not has_grappling_hook:
 		return
 
-	if Input.is_action_just_pressed("ui_home"):
+	if Input.is_action_just_pressed("item_use"):
 		for g in get_tree().get_nodes_in_group("grappling-hook-system"):
 			var success = g.attach_player(self)
 			if success == 0:
 				is_grappling = true
 				break
-	elif Input.is_action_just_released("ui_home"):
+	elif Input.is_action_just_released("item_use"):
 		for g in get_tree().get_nodes_in_group("grappling-hook-system"):
 			var success = g.detach_player(self)
 			if success == 0:
 				is_grappling = false
 				break
 
-	# Prevent rotation when attached
+	# Lock player rotation while swinging
 	global_rotation = 0
+
+
+# Optional: Call this from an Area2D or pickup trigger
+func give_grappling_hook():
+	has_grappling_hook = true
