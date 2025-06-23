@@ -1,57 +1,104 @@
 extends CharacterBody2D
 
-@export var speed = 10.0
-@export var jump_power = 10.0
+@export var speed: int = 300
+@export var jump_force: int = 400
+@export var pinjoint: PinJoint2D
 
-var speed_multiplier = 30.0
-var jump_multiplier = -30.0
-var direction = 0
+@onready var line = $Line2D
+@onready var raycast_container = $RayCastContainer # Get the container for our rays
 
-var has_grappling_hook: bool = true
-var is_grappling: bool = false
+var hooked = false
+var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 
-func _physics_process(delta: float) -> void:
-	if not is_grappling:
-		handle_movement(delta)
+# REMOVED: All _on_hookable_... functions and the hookable_targets array.
 
-	handle_grappling(delta)
+func _ready():
+	if not pinjoint:
+		push_error("PinJoint has NOT been assigned in the Inspector!")
+		return
+	if not raycast_container:
+		push_error("RayCastContainer node not found! Make sure it's a child of the player.")
+		return
+	
+	pinjoint.node_a = get_path()
 
-func handle_movement(delta: float) -> void:
-	if not is_on_floor():
-		velocity += get_gravity() * delta
 
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = jump_power * jump_multiplier
+func _physics_process(delta):
+	if not pinjoint: return
 
-	direction = Input.get_axis("move_left", "move_right")
-	if direction:
-		velocity.x = direction * speed * speed_multiplier
-	else:
-		velocity.x = move_toward(velocity.x, 0, speed * speed_multiplier)
-
+	# Hook system
+	if Input.is_action_just_pressed("item_use") and not hooked:
+		# find_closest_hook_point now returns a Dictionary with the point and the body
+		var hook_data = find_closest_hook_point()
+		
+		if hook_data: # If the dictionary is not null
+			hooked = true
+			pinjoint.global_position = hook_data["point"]  # Use the precise collision point
+			pinjoint.node_b = hook_data["body"].get_path() # Connect to the body we hit
+	
+	elif Input.is_action_just_released("item_use") and hooked:
+		hooked = false
+		pinjoint.node_b = NodePath("")
+	
+	_update_rope()
+	_handle_movement(delta)
 	move_and_slide()
 
-func handle_grappling(delta: float) -> void:
-	if not has_grappling_hook:
-		return
 
-	if Input.is_action_just_pressed("item_use"):
-		for g in get_tree().get_nodes_in_group("grappling-hook-system"):
-			var success = g.attach_player(self)
-			if success == 0:
-				is_grappling = true
-				break
-	elif Input.is_action_just_released("item_use"):
-		for g in get_tree().get_nodes_in_group("grappling-hook-system"):
-			var success = g.detach_player(self)
-			if success == 0:
-				is_grappling = false
-				break
+# This is the new core logic that replaces the Area2D system.
+func find_closest_hook_point():
+	var closest_point = Vector2.ZERO
+	var closest_body = null
+	var closest_distance = INF
 
-	# Lock player rotation while swinging
-	global_rotation = 0
+	# Force the rays to update their collision status right now.
+	# This is important because we are not in the main physics step.
+	for ray in raycast_container.get_children():
+		ray.force_raycast_update()
+
+	# Loop through all the rays in our container
+	for ray in raycast_container.get_children():
+		# Check if this specific ray hit something
+		if ray.is_colliding():
+			var collider = ray.get_collider()
+			
+			# Check if the thing it hit is in the "Hookable" group
+			if collider.is_in_group("Hookable"):
+				var collision_point = ray.get_collision_point()
+				var distance = global_position.distance_squared_to(collision_point)
+				
+				if distance < closest_distance:
+					closest_distance = distance
+					closest_point = collision_point
+					closest_body = collider
+					
+	if closest_body:
+		# Return all the data we need in a single dictionary
+		return {"point": closest_point, "body": closest_body}
+	
+	# If we didn't find anything, return null
+	return null
 
 
-# Optional: Call this from an Area2D or pickup trigger
-func give_grappling_hook():
-	has_grappling_hook = true
+func _update_rope():
+	if hooked and pinjoint:
+		line.clear_points()
+		line.add_point(Vector2.ZERO)
+		line.add_point(to_local(pinjoint.global_position))
+	else:
+		line.clear_points()
+
+
+func _handle_movement(delta):
+	var move_input = Input.get_axis("move_left", "move_right")
+	
+	if not hooked:
+		velocity.x = move_input * speed
+		if not is_on_floor():
+			velocity.y += gravity * delta
+	else:
+		var swing_influence = move_input * speed * 0.5
+		velocity.x += swing_influence * delta
+		
+	if is_on_floor() and Input.is_action_just_pressed("jump"):
+		velocity.y = -jump_force
