@@ -1,10 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://dqyufja82jv67"]
+[gd_scene load_steps=6 format=3 uid="uid://dqyufja82jv67"]
 
 [ext_resource type="Script" uid="uid://b7mmlyfkb7maq" path="res://Assets/Scripts/player_controller.gd" id="1_7dd06"]
 [ext_resource type="Texture2D" uid="uid://cym5lijt1p145" path="res://Assets/Sprites/player.png" id="2_7dd06"]
 [ext_resource type="Script" uid="uid://cd17n4syhgoxr" path="res://Assets/Scripts/StateMachine.gd" id="3_38rej"]
 [ext_resource type="Script" uid="uid://b1nbikwyq3qbl" path="res://Assets/Scripts/move.gd" id="4_t1xgp"]
-[ext_resource type="Script" uid="uid://2qka4ubcm45v" path="res://Assets/Scripts/grapple.gd" id="5_23lac"]
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_7dd06"]
 points = PackedVector2Array(-1.70331, -7.407, 1.70331, -7.407, 1.70331, 1.2345, 0, 8.64149, -1.70331, 1.2345)
@@ -36,11 +35,8 @@ shape = SubResource("ConvexPolygonShape2D_7dd06")
 [node name="PinJoint2D" type="PinJoint2D" parent="."]
 
 [node name="Line2D" type="Line2D" parent="."]
-closed = true
-width = 1.0
-default_color = Color(1, 0, 1, 1)
 
-[node name="RayCastContainer" type="Node" parent="."]
+[node name="RayCastContainer" type="Node2D" parent="."]
 
 [node name="RayCast2D" type="RayCast2D" parent="RayCastContainer"]
 target_position = Vector2(0, -100)
@@ -75,4 +71,3 @@ initial_state = NodePath("Move")
 script = ExtResource("4_t1xgp")
 
 [node name="Grapple" type="Node" parent="StateMachine"]
-script = ExtResource("5_23lac")
