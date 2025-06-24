@@ -5,7 +5,13 @@
 extends CharacterBody2D
 
 # Player stats that states might need access to can live here.
-const JUMP_FORCE = 1000
+var max_run_speed = 300 #was 100
+var run_accel = 800
+var gravity = 1200
+var max_fall_speed = 300 #was 160
+var jump_force = -160
+var jump_hold_time = 0.2
+var current_jump_hold_time = 0.0
 
 # The player's inventory of abilities, stored by name.
 var abilities = {}

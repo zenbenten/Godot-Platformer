@@ -1,55 +1,42 @@
-# JumpState.gd
-# Handles all airborne logic, including jumping and falling.
-
 extends State
-
-# Exports for tweaking physics from the Inspector.
-@export var air_speed = 400
-@export var air_friction = 0.95
 
 func enter(msg: Dictionary = {}):
 	var player = state_machine.player
-	
-	# This is the key logic: check if we entered this state from a jump action.
-	# The "is_jump" key is sent from the Idle or Move state.
-	if msg.has("is_jump") and msg.is_jump == true:
-		# Apply the jump force. The JUMP_FORCE should be defined in your Player.gd script.
-		player.velocity.y = -player.JUMP_FORCE
-		
-		# This is a good place to play a "jump" animation.
-		# For example: state_machine.player.animation_player.play("Jump")
-	else:
-		# If no "is_jump" message, we are falling.
-		# Play a "fall" animation here.
-		# For example: state_machine.player.animation_player.play("Fall")
-		pass
+	if msg.has("is_jump"):
+		player.velocity.y = player.jump_force
+		# Start the timer for holding the jump button
+		player.current_jump_hold_time = player.jump_hold_time
 
-func process_physics(_delta: float):
+func process_physics(delta: float):
 	var player = state_machine.player
-
-	# Apply gravity.
-	player.velocity.y += 60 # Using your established gravity value
-
-	# Handle air control.
-	var walk_input = Input.get_action_strength("right") - Input.get_action_strength("left")
-	player.velocity.x += walk_input * air_speed
 	
-	# Apply air friction to prevent infinite acceleration.
-	player.velocity.x *= air_friction
+	# --- NEW JUMP LOGIC ---
+	# Check if the player is still holding the jump button and the hold timer is active
+	if Input.is_action_pressed("jump") and player.current_jump_hold_time > 0:
+		# While holding, maintain the upward jump force
+		player.velocity.y = player.jump_force
+	else:
+		# If they let go or the time runs out, stop the hold
+		player.current_jump_hold_time = 0
+		
+	# Decrease the hold timer
+	player.current_jump_hold_time -= delta
 
+	# Get horizontal input for air control
+	var direction = sign(Input.get_action_strength("right") - Input.get_action_strength("left"))
+	
+	# Apply air control (you can create separate `air_accel` vars for this)
+	player.velocity.x = move_toward(player.velocity.x, player.max_run_speed * direction, player.run_accel * delta)
+	
+	# Apply gravity towards max fall speed
+	player.velocity.y = move_toward(player.velocity.y, player.max_fall_speed, player.gravity * delta)
+	
 	player.move_and_slide()
-
-	# --- STATE TRANSITIONS ---
 	
-	# 1. Transition to Idle or Move when we land on the floor.
+	# --- State Transitions ---
 	if player.is_on_floor():
-		if is_zero_approx(player.velocity.x):
-			state_machine.transition_to("Idle")
-		else:
-			state_machine.transition_to("Move")
-		return
-
-	# 2. Transition to Swing if the item is used mid-air.
+		state_machine.transition_to("Idle") # Or Move, depending on input
+		
 	if Input.is_action_just_pressed("item_use"):
 		if player.has_ability("Grappling Hook"):
 			state_machine.transition_to("Swing")

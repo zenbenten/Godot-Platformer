@@ -36,7 +36,7 @@ func process_physics(_delta: float):
 	# --- APPLY SWINGING PHYSICS (Only when hooked) ---
 	if hook_ability.hooked:
 		# This is the physics logic from before.
-		var chain_velocity = (hook_ability.tip - player.global_position).normalized() * 150 # CHAIN_PULL initially 60
+		var chain_velocity = (hook_ability.tip - player.global_position).normalized() * 80 # CHAIN_PULL initially 60
 		# You can add more complex swing physics here!
 		player.velocity += chain_velocity
 	

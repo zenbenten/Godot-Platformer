@@ -16,7 +16,7 @@ func process_physics(_delta: float):
 
 	# Apply gravity. Even when idle, gravity should be active
 	# to ensure the player stays grounded on slopes or moving platforms.
-	player.velocity.y += 60 # Using your established gravity value
+	player.velocity.y += player.gravity # Using your established gravity value
 
 	# Apply friction to slow the player down to a stop.
 	player.velocity.x = lerp(player.velocity.x, 0.0, ground_friction)

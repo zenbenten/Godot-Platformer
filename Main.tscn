@@ -95,5 +95,5 @@ scale = Vector2(0.307124, 0.339825)
 texture = ExtResource("4_cm0pq")
 
 [node name="ItemPickup" parent="." instance=ExtResource("4_fos0i")]
-position = Vector2(-947, 850)
+position = Vector2(42, 497)
 item = ExtResource("5_fos0i")
