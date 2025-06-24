@@ -1,88 +1,45 @@
-"""
-This script controls the player character.
-"""
+# Player.gd
+# Final, corrected version. The Player script holds stats and abilities,
+# while the StateMachine handles all per-frame logic.
+
 extends CharacterBody2D
 
-const JUMP_FORCE = 1550			# Force applied on jumping
-const MOVE_SPEED = 500			# Speed to walk with
-const GRAVITY = 60				# Gravity applied every second
-const MAX_SPEED = 2000			# Maximum speed the player is allowed to move
-const FRICTION_AIR = 0.95		# The friction while airborne
-const FRICTION_GROUND = 0.85	# The friction while on the ground
-const CHAIN_PULL = 60 #this started at 105
+# Player stats that states might need access to can live here.
+const JUMP_FORCE = 1000
 
-# We use the built-in 'velocity' property of CharacterBody2D.
-var chain_velocity := Vector2(0,0)
-var can_jump = false			# Whether the player used their air-jump
+# The player's inventory of abilities, stored by name.
+var abilities = {}
 
-# This function is called every physics frame
-func _physics_process(_delta: float) -> void:
-	# Walking
-	var walk = (Input.get_action_strength("right") - Input.get_action_strength("left")) * MOVE_SPEED
+# A direct reference to the state machine for easy access by states if needed,
+# though direct calls from the player are no longer necessary.
+@onready var state_machine = $StateMachine
 
-	# Falling - This now modifies the built-in velocity property
-	velocity.y += GRAVITY
+func _ready():
+	# This function can be used for any one-time setup for the player itself.
+	# We no longer need to instance the chain here from the start.
+	pass
 
-	# Hook physics
-	if $Chain.hooked:
-		# `to_local($Chain.tip).normalized()` is the direction that the chain is pulling
-		chain_velocity = to_local($Chain.tip).normalized() * CHAIN_PULL
-		if chain_velocity.y > 0:
-			# Pulling down isn't as strong
-			chain_velocity.y *= 0.55
-		else:
-			# Pulling up is stronger
-			chain_velocity.y *= 1.65
-		if sign(chain_velocity.x) != sign(walk):
-			# if we are trying to walk in a different
-			# direction than the chain is pulling
-			# reduce its pull
-			chain_velocity.x *= 0.7
-	else:
-		# Not hooked -> no chain velocity
-		chain_velocity = Vector2(0,0)
-	velocity += chain_velocity
+# The _physics_process function has been completely REMOVED.
+# The StateMachine's own _physics_process is called automatically by Godot,
+# which then correctly calls the active state's process_physics function.
 
-	velocity.x += walk		# apply the walking
-	
-	up_direction = Vector2.UP
-	move_and_slide()	# Actually apply all the forces
-	
-	velocity.x -= walk		# take away the walk speed again
-	# ^ This is done so we don't build up walk speed over time
+# This function is called by ItemPickup scenes when the player collides with them.
+func add_item(item_resource: ItemResource):
+	if not abilities.has(item_resource.item_name):
+		# Add the item resource to our dictionary of known abilities.
+		abilities[item_resource.item_name] = item_resource
+		
+		# If the item has an associated ability scene, instance it and add it
+		# as a child of the player.
+		if item_resource.ability_scene:
+			var ability_instance = item_resource.ability_scene.instantiate()
+			# It's good practice to give the instanced ability a clear name.
+			# This gets the filename of the scene (e.g., "GrapplingHookAbility") and uses it as the node name.
+			ability_instance.name = item_resource.ability_scene.get_path().get_file().get_basename()
+			add_child(ability_instance)
+			
+		print("Picked up: ", item_resource.item_name)
 
-	# Manage friction and refresh jump and stuff
-	velocity.y = clamp(velocity.y, -MAX_SPEED, MAX_SPEED)	# Make sure we are in our limits
-	velocity.x = clamp(velocity.x, -MAX_SPEED, MAX_SPEED)
-	
-	var grounded = is_on_floor()
-	if grounded:
-		velocity.x *= FRICTION_GROUND	# Apply friction only on x (we are not moving on y anyway)
-		can_jump = true 				# We refresh our air-jump
-		if velocity.y >= 5:		# Keep the y-velocity small such that
-			velocity.y = 5		# gravity doesn't make this number huge
-	elif is_on_ceiling() and velocity.y <= -5:	# Same on ceilings
-		velocity.y = -5
-
-	# Apply air friction
-	if !grounded:
-		velocity.x *= FRICTION_AIR
-		if velocity.y > 0:
-			velocity.y *= FRICTION_AIR
-	
-	# --- CHAIN INPUT LOGIC ---
-	if Input.is_action_just_pressed("item_use"):
-		# Get the mouse position to calculate the shooting direction
-		var aim_direction = get_viewport().get_mouse_position() - get_viewport().get_visible_rect().size * 0.5
-		$Chain.shoot(aim_direction)
-	
-	if Input.is_action_just_released("item_use"):
-		$Chain.release()
-
-	# --- JUMPING LOGIC ---
-	if Input.is_action_just_pressed("jump"):
-		if grounded:
-			velocity.y = -JUMP_FORCE	# Apply the jump-force
-		elif can_jump:
-			can_jump = false	# Used air-jump
-			velocity.y = -JUMP_FORCE
+# This function is used by states to check if the player possesses a certain ability.
+func has_ability(ability_name: String) -> bool:
+	return abilities.has(ability_name)

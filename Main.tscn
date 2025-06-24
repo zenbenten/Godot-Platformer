@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://ccmihphn0i6e8"]
+[gd_scene load_steps=7 format=3 uid="uid://ccmihphn0i6e8"]
 
 [ext_resource type="TileSet" path="res://Tiles/tiles.tres" id="1"]
 [ext_resource type="PackedScene" uid="uid://704hdtys1kju" path="res://Player.tscn" id="2"]
-[ext_resource type="Script" uid="uid://ytxs8nua64cf" path="res://Camera2D.gd" id="3"]
 [ext_resource type="Texture2D" uid="uid://fxssljcesdq3" path="res://icon.png" id="4_cm0pq"]
+[ext_resource type="PackedScene" uid="uid://bjcsrkof5tixu" path="res://item_pickup.tscn" id="4_fos0i"]
+[ext_resource type="Resource" uid="uid://chelbnnu36tdm" path="res://GrapplingHookItem.tres" id="5_fos0i"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fos0i"]
 
@@ -11,9 +12,6 @@
 
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(321.796, 376.075)
-
-[node name="Camera2D" type="Camera2D" parent="Player"]
-script = ExtResource("3")
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = ExtResource("1")
@@ -95,3 +93,7 @@ shape = SubResource("RectangleShape2D_fos0i")
 [node name="Sprite2D" type="Sprite2D" parent="BigFloor2"]
 scale = Vector2(0.307124, 0.339825)
 texture = ExtResource("4_cm0pq")
+
+[node name="ItemPickup" parent="." instance=ExtResource("4_fos0i")]
+position = Vector2(-947, 850)
+item = ExtResource("5_fos0i")
