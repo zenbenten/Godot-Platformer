@@ -1,51 +1,45 @@
 # IdleState.gd
-# Handles logic for when the player is standing still.
+# Updated to handle shooting straight up.
 
 extends State
 
-# Exports for tweaking physics from the Inspector.
 @export var ground_friction = 0.90
 
 func enter(msg: Dictionary = {}):
-	# This is a good place to trigger an "idle" animation.
-	# For example: state_machine.player.animation_player.play("Idle")
 	pass
 
 func process_physics(_delta: float):
 	var player = state_machine.player
 
-	# Apply gravity. Even when idle, gravity should be active
-	# to ensure the player stays grounded on slopes or moving platforms.
-	player.velocity.y += player.gravity # Using your established gravity value
-
-	# Apply friction to slow the player down to a stop.
+	player.velocity.y = move_toward(player.velocity.y, player.max_fall_speed, player.gravity * _delta)
 	player.velocity.x = lerp(player.velocity.x, 0.0, ground_friction)
-
-	# The move_and_slide() function is essential to apply physics and detect collisions.
 	player.move_and_slide()
 
 	# --- STATE TRANSITIONS ---
-
-	# 1. Transition to Move if there's horizontal input.
 	var walk_input = Input.get_action_strength("right") - Input.get_action_strength("left")
 	if not is_zero_approx(walk_input):
 		state_machine.transition_to("Move")
-		return # Important to return after a transition
+		return
 
-	# 2. Transition to Jump if the jump action is pressed.
 	if Input.is_action_just_pressed("jump"):
-		# We send a message so the Jump state knows to apply the jump force.
 		state_machine.transition_to("Jump", {"is_jump": true})
 		return
 
-	# 3. Transition to Swing if the item is used.
 	if Input.is_action_just_pressed("item_use"):
 		if player.has_ability("Grappling Hook"):
-			state_machine.transition_to("Swing")
+			var aim_direction = Vector2.ZERO
+			
+			# Check for look_up input to determine vertical aim
+			if Input.is_action_pressed("look_up"):
+				# Since we are idle, there is no horizontal input, so we aim straight up.
+				aim_direction = Vector2.UP
+			else:
+				# If not looking up, aim straight horizontally based on facing direction.
+				aim_direction = Vector2(player.facing_direction, 0)
+				
+			state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
 			return
 			
-	# 4. Transition to Jump/Fall if the player walks off a ledge.
 	if not player.is_on_floor():
-		# We don't send a message, so the Jump state knows this is a fall, not a jump.
 		state_machine.transition_to("Jump")
 		return

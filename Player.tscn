@@ -1,9 +1,8 @@
-[gd_scene load_steps=11 format=3 uid="uid://704hdtys1kju"]
+[gd_scene load_steps=10 format=3 uid="uid://704hdtys1kju"]
 
 [ext_resource type="Texture2D" uid="uid://fxssljcesdq3" path="res://icon.png" id="1"]
 [ext_resource type="Script" uid="uid://c0foyndixvthc" path="res://Player.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://bmokyehx7g4aq" path="res://GrapplingHookAbility.tscn" id="3"]
-[ext_resource type="Script" uid="uid://ytxs8nua64cf" path="res://Camera2D.gd" id="3_e80uo"]
 [ext_resource type="Script" uid="uid://4s1j7arcs7o2" path="res://StateMachine.gd" id="5_tdg3f"]
 [ext_resource type="Script" uid="uid://cq484m1evvtms" path="res://IdleState.gd" id="6_5ncpa"]
 [ext_resource type="Script" uid="uid://biwudfloj5d17" path="res://MoveState.gd" id="6_dtqjt"]
@@ -24,7 +23,6 @@ texture = ExtResource("1")
 shape = SubResource("1")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-script = ExtResource("3_e80uo")
 
 [node name="Chain" parent="." instance=ExtResource("3")]
 
