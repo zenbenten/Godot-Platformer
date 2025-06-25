@@ -1,21 +1,19 @@
 # JumpState.gd
-# Updated with correct 8-way aiming logic.
+# Correctly implements the jump buffer timer.
 
 extends State
 
 var ended_jump_early = false
 
 func enter(msg: Dictionary = {}):
-	print("Entered Jump State")
 	var player = state_machine.player
-	
-	var time_in_air = (Time.get_ticks_msec() / 1000.0) - player.time_left_ground
-	var can_use_coyote = time_in_air < player.coyote_time
-	
-	if player.jump_to_consume and (player.is_on_floor() or can_use_coyote):
+	# This state is entered when the player jumps.
+	# The ground states will set the jump_to_consume flag if the jump is valid.
+	if player.jump_to_consume:
 		execute_jump()
-	
-	player.jump_to_consume = false
+	else:
+		# If we enter this state by falling off a ledge, the jump has effectively "ended".
+		ended_jump_early = true
 
 func execute_jump():
 	var player = state_machine.player
@@ -26,50 +24,47 @@ func execute_jump():
 func process_physics(delta: float):
 	var player = state_machine.player
 
+	# --- Variable Jump Height Logic ---
+	# If the jump button is released while moving up, cut the jump short.
 	if not Input.is_action_pressed("jump") and player.velocity.y < 0:
 		ended_jump_early = true
-
+		
+	# --- Gravity Application ---
 	var gravity_multiplier = 1.0
 	if ended_jump_early:
 		gravity_multiplier = player.jump_end_early_gravity_modifier
-	elif player.velocity.y > 0:
+	elif player.velocity.y > 0: # Apply stronger gravity when falling
 		gravity_multiplier = player.fall_gravity_multiplier
 		
 	player.velocity.y += player.gravity * gravity_multiplier * delta
 	
+	# --- Horizontal Air Control ---
 	var direction_input = Input.get_action_strength("right") - Input.get_action_strength("left")
 	if not is_zero_approx(direction_input):
 		player.facing_direction = sign(direction_input)
-	
 	player.velocity.x = move_toward(player.velocity.x, player.max_speed * direction_input, player.air_deceleration * delta)
+	
 	player.move_and_slide()
 
+	# --- CORRECTED JUMP BUFFER LOGIC ---
+	# When jump is pressed while in the air, we don't set a boolean anymore.
+	# We simply store the exact time the button was pressed.
 	if Input.is_action_just_pressed("jump"):
-		player.jump_to_consume = true
+		player.time_jump_was_buffered = Time.get_ticks_msec() / 1000.0
 
-	# --- Corrected Aiming Logic ---
+	# --- State Transitions ---
+	# When we land, transition to a ground state. The ground state will be
+	# responsible for checking the buffer timestamp and deciding to jump again.
+	if player.is_on_floor():
+		state_machine.transition_to("Idle")
+		return
+		
 	if Input.is_action_just_pressed("item_use"):
 		if player.has_ability("Grappling Hook"):
-			print("JumpState: Player has hook. Calculating aim...")
-
 			var horizontal_input = Input.get_action_strength("right") - Input.get_action_strength("left")
 			var vertical_input = Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
-			
 			var aim_direction = Vector2(horizontal_input, vertical_input)
-			
 			if aim_direction == Vector2.ZERO:
 				aim_direction = Vector2(player.facing_direction, 0)
-
-			print("JumpState: Calculated Aim Direction: ", aim_direction.normalized())
 			state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
 			return
-
-	if player.is_on_floor():
-		if player.jump_to_consume:
-			state_machine.transition_to("Jump")
-		else:
-			state_machine.transition_to("Idle")
-		return
-
-func exit():
-	print("Exiting Jump State")

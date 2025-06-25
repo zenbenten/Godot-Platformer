@@ -1,35 +1,36 @@
 # Player.gd
-# Definitive version with all advanced physics variables.
+# Added a timestamp variable for the jump buffer.
 
 extends CharacterBody2D
 
 # --- MOVEMENT ---
 @export_category("Movement")
 @export var max_speed = 500.0
-@export var acceleration = 1000.0
+@export var acceleration = 3000.0
 @export var ground_deceleration = 1200.0
-@export var air_deceleration = 500.0
+@export var air_deceleration = 1500.0
 
 # --- JUMPING ---
 @export_category("Jumping")
-@export var jump_velocity = -500.0 # How high the player can jump.
-@export var jump_end_early_gravity_modifier = 2.0 # Multiplier for gravity when jump is released early.
+@export var jump_velocity = -500.0
+@export var jump_end_early_gravity_modifier = 2.0
 
 # --- GRAVITY ---
 @export_category("Gravity")
-@export var gravity = 1000.0 # The base gravity value.
-@export var fall_gravity_multiplier = 2.0 # Extra gravity applied when falling.
-@export var swing_gravity_multiplier = 0.0 # Use this to make swinging feel floaty.
-@export var grounding_force = 10.0 # A small downward force to stick to slopes.
+@export var gravity = 1000.0
+@export var fall_gravity_multiplier = 2.0
+@export var swing_gravity_multiplier = 0.0
+@export var grounding_force = 10.0
 
 # --- GAME FEEL (THE IMPORTANT STUFF!) ---
 @export_category("Game Feel")
-@export var coyote_time = 0.1 # In seconds. How long you can jump after leaving a ledge.
-@export var jump_buffer = 0.1 # In seconds. How long a jump input is "remembered" before landing.
+@export var coyote_time = 0.2
+@export var jump_buffer = 0.2 # This will now be used correctly!
 
 # --- State-Tracking Variables (managed by the states) ---
 var time_left_ground = 0.0
 var jump_to_consume = false
+var time_jump_was_buffered = 0.0 # NEW: Stores the timestamp of the buffered jump.
 
 # --- Other Player Properties ---
 var facing_direction = 1

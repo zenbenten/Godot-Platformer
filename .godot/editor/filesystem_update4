@@ -4,7 +4,6 @@ res://GrapplingHookAbility.tscn
 res://Player.tscn
 res://item_pickup.tscn
 res://IdleState.gd
-res://MoveState.gd
 res://JumpState.gd
-res://SwingState.gd
+res://MoveState.gd
 res://Player.gd
