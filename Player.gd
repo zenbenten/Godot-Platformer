@@ -1,25 +1,39 @@
 # Player.gd
-# Added a 'facing_direction' variable to remember the last direction moved.
+# Definitive version with all advanced physics variables.
 
 extends CharacterBody2D
 
-# --- ADVANCED PHYSICS VARIABLES ---
-var max_run_speed = 100
-var run_accel = 800
-var gravity = 1000
-var max_fall_speed = 160
-var jump_force = -160
-var jump_hold_time = 0.2
-var current_jump_hold_time = 0.0
+# --- MOVEMENT ---
+@export_category("Movement")
+@export var max_speed = 500.0
+@export var acceleration = 1000.0
+@export var ground_deceleration = 1200.0
+@export var air_deceleration = 500.0
 
-# --- NEW VARIABLE ---
-# Stores the last direction the player was facing (1 for right, -1 for left).
+# --- JUMPING ---
+@export_category("Jumping")
+@export var jump_velocity = -500.0 # How high the player can jump.
+@export var jump_end_early_gravity_modifier = 2.0 # Multiplier for gravity when jump is released early.
+
+# --- GRAVITY ---
+@export_category("Gravity")
+@export var gravity = 1000.0 # The base gravity value.
+@export var fall_gravity_multiplier = 2.0 # Extra gravity applied when falling.
+@export var swing_gravity_multiplier = 0.0 # Use this to make swinging feel floaty.
+@export var grounding_force = 10.0 # A small downward force to stick to slopes.
+
+# --- GAME FEEL (THE IMPORTANT STUFF!) ---
+@export_category("Game Feel")
+@export var coyote_time = 0.1 # In seconds. How long you can jump after leaving a ledge.
+@export var jump_buffer = 0.1 # In seconds. How long a jump input is "remembered" before landing.
+
+# --- State-Tracking Variables (managed by the states) ---
+var time_left_ground = 0.0
+var jump_to_consume = false
+
+# --- Other Player Properties ---
 var facing_direction = 1
-
-# The player's inventory of abilities, stored by name.
 var abilities = {}
-
-# A direct reference to the state machine.
 @onready var state_machine = $StateMachine
 
 func _ready():

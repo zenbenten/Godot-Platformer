@@ -1,45 +1,55 @@
 # IdleState.gd
-# Updated to handle shooting straight up.
+# Updated with correct 8-way aiming logic.
 
 extends State
 
-@export var ground_friction = 0.90
-
 func enter(msg: Dictionary = {}):
+	print("Entered Idle State")
 	pass
 
-func process_physics(_delta: float):
+func process_physics(delta: float):
 	var player = state_machine.player
-
-	player.velocity.y = move_toward(player.velocity.y, player.max_fall_speed, player.gravity * _delta)
-	player.velocity.x = lerp(player.velocity.x, 0.0, ground_friction)
+	
+	player.velocity.x = move_toward(player.velocity.x, 0, player.ground_deceleration * delta)
+	player.velocity.y = player.grounding_force
 	player.move_and_slide()
 
-	# --- STATE TRANSITIONS ---
+	if Input.is_action_just_pressed("jump"):
+		player.jump_to_consume = true
+	
+	if player.jump_to_consume:
+		state_machine.transition_to("Jump")
+		return
+
 	var walk_input = Input.get_action_strength("right") - Input.get_action_strength("left")
 	if not is_zero_approx(walk_input):
 		state_machine.transition_to("Move")
 		return
-
-	if Input.is_action_just_pressed("jump"):
-		state_machine.transition_to("Jump", {"is_jump": true})
-		return
-
-	if Input.is_action_just_pressed("item_use"):
-		if player.has_ability("Grappling Hook"):
-			var aim_direction = Vector2.ZERO
-			
-			# Check for look_up input to determine vertical aim
-			if Input.is_action_pressed("look_up"):
-				# Since we are idle, there is no horizontal input, so we aim straight up.
-				aim_direction = Vector2.UP
-			else:
-				# If not looking up, aim straight horizontally based on facing direction.
-				aim_direction = Vector2(player.facing_direction, 0)
-				
-			state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
-			return
-			
+		
 	if not player.is_on_floor():
+		player.time_left_ground = Time.get_ticks_msec() / 1000.0
 		state_machine.transition_to("Jump")
 		return
+
+	# --- Corrected Aiming Logic ---
+	if Input.is_action_just_pressed("item_use"):
+		if player.has_ability("Grappling Hook"):
+			print("IdleState: Player has hook. Calculating aim...")
+			
+			# Get both horizontal and vertical inputs
+			var horizontal_input = Input.get_action_strength("right") - Input.get_action_strength("left")
+			var vertical_input = Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
+			
+			# Create a direction vector from the inputs
+			var aim_direction = Vector2(horizontal_input, vertical_input)
+			
+			# If there's no input at all, default to the player's facing direction
+			if aim_direction == Vector2.ZERO:
+				aim_direction = Vector2(player.facing_direction, 0)
+
+			print("IdleState: Calculated Aim Direction: ", aim_direction.normalized())
+			state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
+			return
+
+func exit():
+	print("Exiting Idle State")
