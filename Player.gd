@@ -6,8 +6,8 @@ extends CharacterBody2D
 # --- MOVEMENT ---
 @export_category("Movement")
 @export var max_speed = 500.0
-@export var acceleration = 3000.0
-@export var ground_deceleration = 1200.0
+@export var acceleration = 9000.0
+@export var ground_deceleration = 9000.0
 @export var air_deceleration = 1500.0
 
 # --- JUMPING ---
