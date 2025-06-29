@@ -1,6 +1,15 @@
+MultiplayerSpawner
+Node
+CanvasLayer
+Button
+LineEdit
+HBoxContainer
+Label
+VBoxContainer
+PanelContainer
+MarginContainer
 CollisionShape2D
 Sprite2D
 Area2D
-Node
 Camera2D
 StaticBody2D

@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://ccmihphn0i6e8"]
+[gd_scene load_steps=8 format=3 uid="uid://ccmihphn0i6e8"]
 
 [ext_resource type="TileSet" path="res://Tiles/tiles.tres" id="1"]
+[ext_resource type="Script" uid="uid://bwo45m6b1pubr" path="res://main.gd" id="1_fos0i"]
 [ext_resource type="PackedScene" uid="uid://704hdtys1kju" path="res://Player.tscn" id="2"]
 [ext_resource type="Texture2D" uid="uid://fxssljcesdq3" path="res://icon.png" id="4_cm0pq"]
 [ext_resource type="PackedScene" uid="uid://bjcsrkof5tixu" path="res://item_pickup.tscn" id="4_fos0i"]
@@ -8,10 +9,10 @@
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fos0i"]
 
-[node name="Main" type="Node2D"]
-
-[node name="Player" parent="." instance=ExtResource("2")]
-position = Vector2(321.796, 376.075)
+[node name="Main" type="Node2D" node_paths=PackedStringArray("player_spawner")]
+script = ExtResource("1_fos0i")
+player_scene = ExtResource("2")
+player_spawner = NodePath("OnlineEntities/PlayerSpawner")
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = ExtResource("1")
@@ -97,3 +98,9 @@ texture = ExtResource("4_cm0pq")
 [node name="ItemPickup" parent="." instance=ExtResource("4_fos0i")]
 position = Vector2(42, 497)
 item = ExtResource("5_fos0i")
+
+[node name="OnlineEntities" type="Node" parent="."]
+
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="OnlineEntities"]
+_spawnable_scenes = PackedStringArray("uid://704hdtys1kju")
+spawn_path = NodePath("..")

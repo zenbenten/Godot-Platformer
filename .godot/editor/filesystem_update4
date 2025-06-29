@@ -3,5 +3,10 @@ res://Main.tscn
 res://GrapplingHookAbility.tscn
 res://Player.tscn
 res://item_pickup.tscn
+res://game/ui/connection_manager.tscn
+res://game/ui/enet_connection_manager.gd
+res://game/game.tscn
+res://game/ui/connection_manager.gd
+res://game/game.gd
+res://main.gd
 res://Player.gd
-res://SwingState.gd

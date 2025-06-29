@@ -1,6 +1,6 @@
 # Player.gd
 # Added a timestamp variable for the jump buffer.
-
+class_name Player
 extends CharacterBody2D
 
 # --- MOVEMENT ---
