@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://tas2ui2tbtsu"]
+
+[ext_resource type="Script" uid="uid://dp2mwj6fcth5u" path="res://scripts/item_pickup.gd" id="1_lgqak"]
+[ext_resource type="Texture2D" uid="uid://kt4mj5s3qkho" path="res://icon.svg" id="2_yiukj"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yiukj"]
+size = Vector2(123, 124)
+
+[node name="ItemPickup" type="Area2D"]
+collision_mask = 3
+script = ExtResource("1_lgqak")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_yiukj")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1.5, -2)
+shape = SubResource("RectangleShape2D_yiukj")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

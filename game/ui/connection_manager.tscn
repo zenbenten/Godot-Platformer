@@ -1,9 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://dv7f6y416d3o7"]
+[gd_scene load_steps=4 format=3 uid="uid://3bfq47y33kjb"]
 
-[ext_resource type="Script" uid="uid://eg2rmjdbcdt8" path="res://game/ui/connection_manager.gd" id="1_4aukp"]
-[ext_resource type="Script" uid="uid://df32hi2h5qvk6" path="res://game/ui/enet_connection_manager.gd" id="1_jrqth"]
+[ext_resource type="Script" uid="uid://gnf8d83i8ahe" path="res://game/ui/connection_manager.gd" id="1_16avn"]
+[ext_resource type="Script" uid="uid://cot0xci2rghef" path="res://game/ui/enet_connection_manager.gd" id="1_tg48c"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_7xt35"]
+[sub_resource type="LabelSettings" id="LabelSettings_xox3o"]
 font_size = 32
 
 [node name="ConnectionManager" type="Control" node_paths=PackedStringArray("enet")]
@@ -13,7 +13,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_4aukp")
+script = ExtResource("1_16avn")
 enet = NodePath("MarginContainer/ConnectionMethods/ENet")
 
 [node name="TitleContainer" type="MarginContainer" parent="."]
@@ -30,7 +30,7 @@ theme_override_constants/margin_top = 20
 [node name="Label" type="Label" parent="TitleContainer"]
 layout_mode = 2
 text = "Connect to Lobby"
-label_settings = SubResource("LabelSettings_7xt35")
+label_settings = SubResource("LabelSettings_xox3o")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -50,7 +50,7 @@ layout_mode = 2
 
 [node name="ENet" type="PanelContainer" parent="MarginContainer/ConnectionMethods" node_paths=PackedStringArray("host_ip", "host_port")]
 layout_mode = 2
-script = ExtResource("1_jrqth")
+script = ExtResource("1_tg48c")
 host_ip = NodePath("VBoxContainer/JoinMenu/HostIP")
 host_port = NodePath("VBoxContainer/JoinMenu/HostPort")
 

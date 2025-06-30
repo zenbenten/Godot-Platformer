@@ -1,2 +1,1 @@
 ItemResource
-Resource

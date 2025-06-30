@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=4 format=3 uid="uid://cbcraxwxxsxl"]
+
+[ext_resource type="PackedScene" uid="uid://cp312l7py55sb" path="res://scenes/Chain.tscn" id="1_btprw"]
+[ext_resource type="Script" uid="uid://dpgdhpvg1yi7d" path="res://scripts/item_resource.gd" id="1_qugnc"]
+[ext_resource type="Texture2D" uid="uid://kt4mj5s3qkho" path="res://icon.svg" id="2_8jbm0"]
+
+[resource]
+script = ExtResource("1_qugnc")
+item_name = "Chain"
+item_description = ""
+pickup_texture = ExtResource("2_8jbm0")
+ability_scene = ExtResource("1_btprw")
+metadata/_custom_type_script = "uid://dpgdhpvg1yi7d"
