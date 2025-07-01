@@ -10,13 +10,22 @@ func enter(msg: Dictionary = {}):
 	
 	# MODIFIED PRINT STATEMENT
 	print("Player " + str(player.name) + " entering JUMP State.")
+
+	# --- NEW COYOTE TIME CHECK ---
+	# Calculate how long it's been since the player left the ground.
+	var time_since_left_ground = (Time.get_ticks_msec() / 1000.0) - player.time_left_ground
+	
+	# If the jump button is pressed within the coyote time window, allow a jump.
+	if time_since_left_ground < player.coyote_time and Input.is_action_just_pressed("jump"):
+		player.jump_to_consume = true
+
 	# This state is entered when the player jumps.
 	# The ground states will set the jump_to_consume flag if the jump is valid.
-	if player.jump_to_consume:
+	if player.jump_to_consume: # [cite: 57]
 		execute_jump()
 	else:
-		# If we enter this state by falling off a ledge, the jump has effectively "ended".
-		ended_jump_early = true
+		# If we enter this state by falling off a ledge without jumping, the jump has "ended".
+		ended_jump_early = true # [cite: 59]
 
 func execute_jump():
 	var player = state_machine.player
