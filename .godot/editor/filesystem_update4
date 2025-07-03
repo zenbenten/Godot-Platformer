@@ -4,4 +4,3 @@ res://scenes/game.tscn
 res://scenes/player.tscn
 res://scenes/Chain.tscn
 res://scenes/item_pickup.tscn
-res://scripts/jump_state.gd
