@@ -7,13 +7,12 @@ func enter(msg: Dictionary = {}):
 	var player = state_machine.player
 	print("Player " + str(player.name) + " entering IDLE State.")
 	
-	# --- CORRECTED JUMP BUFFER CHECK ---
-	# Check if the time since the jump was buffered is within the allowed window.
+	# Check if a jump was buffered right before landing.
 	var time_since_buffer = (Time.get_ticks_msec() / 1000.0) - player.time_jump_was_buffered
 	if time_since_buffer < player.jump_buffer:
 		player.jump_to_consume = true
 		state_machine.transition_to("Jump")
-		return
+		return # Exit early to prevent idle logic from running for a frame.
 
 func process_physics(delta: float):
 	if not is_multiplayer_authority():

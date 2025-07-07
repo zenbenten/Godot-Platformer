@@ -1,6 +1,7 @@
+res://scenes/player.tscn
 res://scenes/world.tscn
 res://game/ui/connection_manager.tscn
 res://scenes/game.tscn
-res://scenes/player.tscn
 res://scenes/Chain.tscn
 res://scenes/item_pickup.tscn
+res://scripts/idle_state.gd
