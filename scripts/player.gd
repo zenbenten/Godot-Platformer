@@ -1,5 +1,4 @@
 # Player.gd
-# Added a timestamp variable for the jump buffer.
 class_name Player
 extends CharacterBody2D
 
@@ -25,23 +24,29 @@ extends CharacterBody2D
 # --- GAME FEEL (THE IMPORTANT STUFF!) ---
 @export_category("Game Feel")
 @export var coyote_time = 0.2
-@export var jump_buffer = 0.2 # This will now be used correctly!
+@export var jump_buffer = 0.2
 
 # --- State-Tracking Variables (managed by the states) ---
 var time_left_ground = 0.0
 var jump_to_consume = false
-var time_jump_was_buffered = 0.0 # NEW: Stores the timestamp of the buffered jump.
+var time_jump_was_buffered = 0.0
 
 # --- Other Player Properties ---
 var facing_direction = 1
 var abilities = {}
 @onready var state_machine = $StateMachine
 
+# The _ready() function is called after the node and its children have
+# entered the scene tree. It's a more stable place for this logic.
 func _ready():
-	pass
-
-func _enter_tree() -> void:
+	# Set authority based on the node's name (which should be the owner's peer ID)
 	set_multiplayer_authority(int(str(name)))
+
+	# This is the key change. We directly set the camera's enabled property
+	# to the result of the authority check. This ensures that for any given
+	# client, only the camera on the player node it controls will be active.
+	# All other player cameras will be explicitly disabled.
+	$Camera2D.enabled = is_multiplayer_authority()
 
 func add_item(item_resource: ItemResource):
 	if not abilities.has(item_resource.item_name):
