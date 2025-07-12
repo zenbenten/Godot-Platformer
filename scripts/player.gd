@@ -32,6 +32,7 @@ extends CharacterBody2D
 @export var drop_up_force = -350.0
 @export var drop_away_force = 200.0
 
+
 # --- State-Tracking Variables (managed by the states) ---
 var time_left_ground = 0.0
 var jump_to_consume = false
@@ -43,61 +44,54 @@ var current_item: ItemResource = null
 @onready var state_machine = $StateMachine
 
 # --- Authoritative Host Input State ---
-# These variables are set on the HOST by client RPCs. The state machine reads these.
 var client_input_direction = 0.0
 var client_is_holding_jump = false
 var client_wants_to_jump = false
-var client_wants_to_use_item = false
-var client_item_aim_vector = Vector2.ZERO
-
 
 func _ready():
-	# Every player instance recognizes the host (peer ID 1) as its authority.
 	set_multiplayer_authority(1)
-
-	# This line now handles both enabling the correct camera and disabling
-	# all others. It checks if the character's ID (its name) matches the
-	# game client's ID. It will be 'true' for your character and 'false'
-	# for everyone else's character on your screen.
 	$Camera2D.enabled = (int(str(name)) == multiplayer.get_unique_id())
 
 func _physics_process(delta):
-	# This block only runs on the client that "owns" this character.
-	# Its only job is to capture input and send it to the host (peer ID 1).
 	if int(str(name)) == multiplayer.get_unique_id():
-		# Capture all relevant inputs for this frame.
+		# Capture movement and jump inputs.
 		var direction = Input.get_action_strength("right") - Input.get_action_strength("left")
 		var holding_jump = Input.is_action_pressed("jump")
 		var wants_jump = Input.is_action_just_pressed("jump")
-		var wants_item_use = Input.is_action_just_pressed("item_use")
-		var aim_vec = Vector2.ZERO
 		
-		if wants_item_use:
-			var h_input = Input.get_action_strength("right") - Input.get_action_strength("left")
-			var v_input = Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
-			aim_vec = Vector2(h_input, v_input)
+		# Capture the item press/release events.
+		var wants_item_use = Input.is_action_just_pressed("item_use")
+		var wants_item_release = Input.is_action_just_released("item_use")
 
-		# Send all captured inputs to the host via an RPC call.
-		send_input_to_host.rpc_id(1, direction, holding_jump, wants_jump, wants_item_use, aim_vec)
+		# Send movement/jump state every frame.
+		if multiplayer.is_server():
+			client_input_direction = direction
+			client_is_holding_jump = holding_jump
+			if wants_jump: client_wants_to_jump = true
+		else:
+			send_movement_input_to_host.rpc_id(1, direction, holding_jump, wants_jump)
 
+		# If an item event happened, send a separate RPC to the StateMachine.
+		if wants_item_use or wants_item_release:
+			var aim_vec = Vector2.ZERO
+			if wants_item_use:
+				var h_input = Input.get_action_strength("right") - Input.get_action_strength("left")
+				var v_input = Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
+				aim_vec = Vector2(h_input, v_input)
 
-# This RPC function will be executed ON THE HOST when a client calls it.
+			if multiplayer.is_server():
+				$StateMachine.remote_handle_item_input(wants_item_use, wants_item_release, aim_vec)
+			else:
+				$StateMachine.rpc_id(1, "remote_handle_item_input", wants_item_use, wants_item_release, aim_vec)
+
+# This RPC is now only for movement and jumping.
 @rpc("any_peer", "call_local")
-func send_input_to_host(direction, holding_jump, wants_jump, wants_item_use, aim_vec):
-	# A security check to make sure only the correct client can control this character.
+func send_movement_input_to_host(direction, holding_jump, wants_jump):
 	if multiplayer.get_remote_sender_id() != int(str(name)):
 		return
-
-	# Store the received inputs in our variables so the state machine can use them.
 	client_input_direction = direction
 	client_is_holding_jump = holding_jump
-	# Only set "wants" flags if they are true, they will be reset by the state machine.
-	if wants_jump:
-		client_wants_to_jump = true
-	if wants_item_use:
-		client_wants_to_use_item = true
-	client_item_aim_vector = aim_vec
-
+	if wants_jump: client_wants_to_jump = true
 
 func drop_item():
 	if not current_item:
@@ -116,17 +110,15 @@ func drop_item():
 	current_item = null
 	print("Item dropped.")
 
-
 func add_item(item_resource: ItemResource):
 	if current_item:
-		drop_item()
+		drop_item.call_deferred()
 	current_item = item_resource
 	if current_item.ability_scene:
 		var ability_instance = current_item.ability_scene.instantiate()
 		ability_instance.name = current_item.ability_scene.get_path().get_file().get_basename()
 		add_child(ability_instance)
 	print("Picked up: ", current_item.item_name)
-
 
 func has_ability(ability_name: String) -> bool:
 	return current_item and current_item.item_name == ability_name

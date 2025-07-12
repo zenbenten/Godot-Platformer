@@ -21,6 +21,7 @@ func shoot(dir: Vector2) -> void:
 func release() -> void:
 	flying = false
 	hooked = false
+	self.visible = false 
 	# Add this line to disable the node until its next use.
 	process_mode = Node.PROCESS_MODE_DISABLED
 
