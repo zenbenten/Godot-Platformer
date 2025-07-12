@@ -1,7 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://c1occgrq4dqu5"]
+[gd_scene load_steps=14 format=3 uid="uid://c1occgrq4dqu5"]
 
 [ext_resource type="Script" uid="uid://7sveml8bvs3l" path="res://scripts/player.gd" id="1_fjrip"]
 [ext_resource type="Script" uid="uid://cc05fiwi3khbb" path="res://scripts/state_machine.gd" id="2_dqkch"]
+[ext_resource type="PackedScene" uid="uid://tas2ui2tbtsu" path="res://scenes/item_pickup.tscn" id="2_y4r1p"]
 [ext_resource type="Script" uid="uid://bhy34lehtffbx" path="res://scripts/idle_state.gd" id="3_qlg0r"]
 [ext_resource type="Script" uid="uid://dt18mxje1us1m" path="res://scripts/move_state.gd" id="4_dqkch"]
 [ext_resource type="Script" uid="uid://3h0gjqq8ctcg" path="res://scripts/jump_state.gd" id="5_qlg0r"]
@@ -38,6 +39,8 @@ animations = [{
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 2
 script = ExtResource("1_fjrip")
+dropped_item_scene = ExtResource("2_y4r1p")
+drop_away_force = 350.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-0.5, -3)

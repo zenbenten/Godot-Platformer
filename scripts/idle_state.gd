@@ -1,6 +1,5 @@
 # IdleState.gd
 # Correctly implements the jump buffer timer check upon entering the state.
-
 extends State
 
 func enter(msg: Dictionary = {}):
@@ -47,11 +46,24 @@ func process_physics(delta: float):
 		return
 		
 	if Input.is_action_just_pressed("item_use"):
-		if player.has_ability("Grappling Hook"):
+		# Check if the player is holding an item to use or drop.
+		if player.current_item:
+			# Capture all directional input from the player.
 			var horizontal_input = Input.get_action_strength("right") - Input.get_action_strength("left")
 			var vertical_input = Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
-			var aim_direction = Vector2(horizontal_input, vertical_input)
-			if aim_direction == Vector2.ZERO:
-				aim_direction = Vector2(player.facing_direction, 0)
-			state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
-			return
+			var input_vector = Vector2(horizontal_input, vertical_input)
+
+			# CONDITION: If the player is ONLY holding "down", it's a drop command.
+			if input_vector == Vector2.DOWN:
+				player.drop_item()
+				return
+			
+			# Otherwise, it's a "use item" command.
+			if player.has_ability("Grappling Hook"):
+				var aim_direction = input_vector
+				# If no direction is held, fire straight ahead.
+				if aim_direction == Vector2.ZERO:
+					aim_direction = Vector2(player.facing_direction, 0)
+				
+				state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
+				return

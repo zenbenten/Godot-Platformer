@@ -1,6 +1,5 @@
 # JumpState.gd
 # Correctly implements the jump buffer timer.
-
 extends State
 
 var ended_jump_early = false
@@ -21,11 +20,11 @@ func enter(msg: Dictionary = {}):
 
 	# This state is entered when the player jumps.
 	# The ground states will set the jump_to_consume flag if the jump is valid.
-	if player.jump_to_consume: # [cite: 57]
+	if player.jump_to_consume:
 		execute_jump()
 	else:
 		# If we enter this state by falling off a ledge without jumping, the jump has "ended".
-		ended_jump_early = true # [cite: 59]
+		ended_jump_early = true
 
 func execute_jump():
 	var player = state_machine.player
@@ -75,11 +74,24 @@ func process_physics(delta: float):
 		return
 		
 	if Input.is_action_just_pressed("item_use"):
-		if player.has_ability("Grappling Hook"):
+		# Check if the player is holding an item to use or drop.
+		if player.current_item:
+			# Capture all directional input from the player.
 			var horizontal_input = Input.get_action_strength("right") - Input.get_action_strength("left")
 			var vertical_input = Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
-			var aim_direction = Vector2(horizontal_input, vertical_input)
-			if aim_direction == Vector2.ZERO:
-				aim_direction = Vector2(player.facing_direction, 0)
-			state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
-			return
+			var input_vector = Vector2(horizontal_input, vertical_input)
+
+			# CONDITION: If the player is ONLY holding "down", it's a drop command.
+			if input_vector == Vector2.DOWN:
+				player.drop_item()
+				return
+			
+			# Otherwise, it's a "use item" command.
+			if player.has_ability("Grappling Hook"):
+				var aim_direction = input_vector
+				# If no direction is held, fire straight ahead.
+				if aim_direction == Vector2.ZERO:
+					aim_direction = Vector2(player.facing_direction, 0)
+				
+				state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
+				return
