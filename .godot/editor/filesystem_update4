@@ -1,11 +1,9 @@
-res://scenes/player.tscn
-res://scripts/player.gd
-res://scripts/idle_state.gd
-res://scripts/move_state.gd
-res://scripts/jump_state.gd
 res://scenes/world.tscn
 res://game/ui/connection_manager.tscn
 res://scenes/game.tscn
+res://scenes/player.tscn
 res://scenes/Chain.tscn
 res://scenes/item_pickup.tscn
-res://scripts/item_pickup.gd
+res://scripts/Chain.gd
+res://scripts/swing_state.gd
+res://scripts/player.gd

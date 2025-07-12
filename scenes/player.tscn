@@ -49,6 +49,8 @@ shape = SubResource("RectangleShape2D_hqtel")
 [node name="Camera2D" type="Camera2D" parent="."]
 
 [node name="Chain" parent="." instance=ExtResource("8_smehm")]
+process_mode = 4
+visible = false
 
 [node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
 script = ExtResource("2_dqkch")
