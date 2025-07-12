@@ -50,6 +50,7 @@ var client_wants_to_jump = false
 
 func _ready():
 	set_multiplayer_authority(1)
+	$Chain.set_multiplayer_authority(1)
 	$Camera2D.enabled = (int(str(name)) == multiplayer.get_unique_id())
 
 func _physics_process(delta):

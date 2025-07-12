@@ -12,10 +12,13 @@ func enter(msg: Dictionary = {}):
 
 	if hook_ability:
 		hook_ability.process_mode = Node.PROCESS_MODE_INHERIT
+		# Call locally for the host to avoid race conditions
 		hook_ability.shoot(aim_direction)
+		# Send RPC for the clients
 		hook_ability.rpc("shoot", aim_direction)
 	else:
 		state_machine.transition_to("Jump")
+
 
 func process_physics(delta: float):
 	if not is_multiplayer_authority():
@@ -42,13 +45,14 @@ func process_physics(delta: float):
 	player.velocity.x = move_toward(player.velocity.x, player.max_speed * direction_input, player.air_deceleration * delta)
 	
 	player.move_and_slide()
+	
 
 func exit():
 	if is_instance_valid(hook_ability):
 		hook_ability.rpc("release")
 
 func on_item_input(press: bool, release: bool, _aim_vector: Vector2):
-	# This state only cares about the release of the button.
+	# This state only cares about the release of the button to end the swing.
 	if release:
 		if is_instance_valid(hook_ability):
 			hook_ability.rpc("release")

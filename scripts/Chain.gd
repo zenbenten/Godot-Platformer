@@ -12,6 +12,7 @@ var hooked = false
 
 @rpc("any_peer", "call_local")
 func shoot(dir: Vector2) -> void:
+	process_mode = Node.PROCESS_MODE_INHERIT
 	direction = dir.normalized()
 	flying = true
 	hooked = false
@@ -31,6 +32,7 @@ func _process(_delta: float):
 		return
 	
 	var tip_loc = to_local(tip)
+	$Tip.position = tip_loc
 	links.rotation = self.position.angle_to_point(tip_loc) + deg_to_rad(90)
 	$Tip.rotation = self.position.angle_to_point(tip_loc) + deg_to_rad(90)
 	links.position = tip_loc/2
