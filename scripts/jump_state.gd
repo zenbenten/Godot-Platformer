@@ -1,29 +1,21 @@
 # JumpState.gd
-# Correctly implements the jump buffer timer.
 extends State
 
 var ended_jump_early = false
 
 func enter(msg: Dictionary = {}):
 	var player = state_machine.player
-	
-	# MODIFIED PRINT STATEMENT
 	print("Player " + str(player.name) + " entering JUMP State.")
 
-	# --- NEW COYOTE TIME CHECK ---
-	# Calculate how long it's been since the player left the ground.
 	var time_since_left_ground = (Time.get_ticks_msec() / 1000.0) - player.time_left_ground
 	
-	# If the jump button is pressed within the coyote time window, allow a jump.
-	if time_since_left_ground < player.coyote_time and Input.is_action_just_pressed("jump"):
+	# Coyote time check now uses the client's "wants to jump" flag
+	if time_since_left_ground < player.coyote_time and player.client_wants_to_jump:
 		player.jump_to_consume = true
 
-	# This state is entered when the player jumps.
-	# The ground states will set the jump_to_consume flag if the jump is valid.
 	if player.jump_to_consume:
 		execute_jump()
 	else:
-		# If we enter this state by falling off a ledge without jumping, the jump has "ended".
 		ended_jump_early = true
 
 func execute_jump():
@@ -37,61 +29,43 @@ func process_physics(delta: float):
 		return
 	var player = state_machine.player
 	
-	print("Player " + str(player.name) + " in " + self.name + " state. is_on_floor(): " + str(player.is_on_floor()))
-	# --- Variable Jump Height Logic ---
-	# If the jump button is released while moving up, cut the jump short.
-	if not Input.is_action_pressed("jump") and player.velocity.y < 0:
+	# Variable Jump Height Logic now uses the client's "is holding jump" state
+	if not player.client_is_holding_jump and player.velocity.y < 0:
 		ended_jump_early = true
 		
-	# --- Gravity Application ---
 	var gravity_multiplier = 1.0
 	if ended_jump_early:
 		gravity_multiplier = player.jump_end_early_gravity_modifier
-	elif player.velocity.y > 0: # Apply stronger gravity when falling
+	elif player.velocity.y > 0:
 		gravity_multiplier = player.fall_gravity_multiplier
 		
 	player.velocity.y += player.gravity * gravity_multiplier * delta
 	
-	# --- Horizontal Air Control ---
-	var direction_input = Input.get_action_strength("right") - Input.get_action_strength("left")
+	var direction_input = player.client_input_direction
 	if not is_zero_approx(direction_input):
 		player.facing_direction = sign(direction_input)
 	player.velocity.x = move_toward(player.velocity.x, player.max_speed * direction_input, player.air_deceleration * delta)
 	
 	player.move_and_slide()
 
-	# --- CORRECTED JUMP BUFFER LOGIC ---
-	# When jump is pressed while in the air, we don't set a boolean anymore.
-	# We simply store the exact time the button was pressed.
-	if Input.is_action_just_pressed("jump"):
+	# Jump buffer logic now uses the client's "wants to jump" flag
+	if player.client_wants_to_jump:
 		player.time_jump_was_buffered = Time.get_ticks_msec() / 1000.0
+		player.client_wants_to_jump = false # Consume the jump input
 
-	# --- State Transitions ---
-	# When we land, transition to a ground state. The ground state will be
-	# responsible for checking the buffer timestamp and deciding to jump again.
 	if player.is_on_floor():
 		state_machine.transition_to("Idle")
 		return
 		
-	if Input.is_action_just_pressed("item_use"):
-		# Check if the player is holding an item to use or drop.
+	if player.client_wants_to_use_item:
 		if player.current_item:
-			# Capture all directional input from the player.
-			var horizontal_input = Input.get_action_strength("right") - Input.get_action_strength("left")
-			var vertical_input = Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
-			var input_vector = Vector2(horizontal_input, vertical_input)
-
-			# CONDITION: If the player is ONLY holding "down", it's a drop command.
+			var input_vector = player.client_item_aim_vector
 			if input_vector == Vector2.DOWN:
 				player.drop_item()
-				return
-			
-			# Otherwise, it's a "use item" command.
-			if player.has_ability("Grappling Hook"):
+			elif player.has_ability("Grappling Hook"):
 				var aim_direction = input_vector
-				# If no direction is held, fire straight ahead.
 				if aim_direction == Vector2.ZERO:
 					aim_direction = Vector2(player.facing_direction, 0)
-				
 				state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
-				return
+		player.client_wants_to_use_item = false # Consume the use item input
+		return
