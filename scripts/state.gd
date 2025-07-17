@@ -20,5 +20,5 @@ func process_physics(_delta: float):
 	pass
 
 # NEW: Virtual function to handle item input events sent from the StateMachine.
-func on_item_input(press: bool, release: bool, aim_vector: Vector2):
+func on_item_input(_press: bool, _release: bool, _aim_vector: Vector2):
 	pass

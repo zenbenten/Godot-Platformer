@@ -51,7 +51,7 @@ func exit():
 	if is_instance_valid(hook_ability):
 		hook_ability.rpc("release")
 
-func on_item_input(press: bool, release: bool, _aim_vector: Vector2):
+func on_item_input(_press: bool, release: bool, _aim_vector: Vector2):
 	# This state only cares about the release of the button to end the swing.
 	if release:
 		if is_instance_valid(hook_ability):

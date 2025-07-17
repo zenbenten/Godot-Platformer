@@ -53,6 +53,7 @@ func _ready():
 	$Chain.set_multiplayer_authority(1)
 	$Camera2D.enabled = (int(str(name)) == multiplayer.get_unique_id())
 
+@warning_ignore("unused_parameter")
 func _physics_process(delta):
 	if int(str(name)) == multiplayer.get_unique_id():
 		# Capture movement and jump inputs.
@@ -94,6 +95,25 @@ func send_movement_input_to_host(direction, holding_jump, wants_jump):
 	client_is_holding_jump = holding_jump
 	if wants_jump: client_wants_to_jump = true
 
+# NEW function to safely handle the entire pickup transaction in one deferred call.
+func handle_pickup(item_pickup_node):
+	var new_item_resource = item_pickup_node.item
+	
+	# 1. If we are already holding an item, drop it first.
+	if self.current_item:
+		self.drop_item()
+		
+	# 2. Equip the new item.
+	self.current_item = new_item_resource
+	if self.current_item.ability_scene:
+		var ability_instance = self.current_item.ability_scene.instantiate()
+		ability_instance.name = self.current_item.ability_scene.get_path().get_file().get_basename()
+		add_child(ability_instance)
+	print("Picked up: ", self.current_item.item_name)
+	
+	# 3. Now that the transaction is complete, safely destroy the item pickup from the ground.
+	item_pickup_node.queue_free()
+
 func drop_item():
 	if not current_item:
 		return
@@ -111,15 +131,7 @@ func drop_item():
 	current_item = null
 	print("Item dropped.")
 
-func add_item(item_resource: ItemResource):
-	if current_item:
-		drop_item.call_deferred()
-	current_item = item_resource
-	if current_item.ability_scene:
-		var ability_instance = current_item.ability_scene.instantiate()
-		ability_instance.name = current_item.ability_scene.get_path().get_file().get_basename()
-		add_child(ability_instance)
-	print("Picked up: ", current_item.item_name)
+# The old 'add_item' function is now removed to prevent the buggy logic from being called.
 
 func has_ability(ability_name: String) -> bool:
 	return current_item and current_item.item_name == ability_name

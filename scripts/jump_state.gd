@@ -54,7 +54,7 @@ func process_physics(delta: float):
 		state_machine.transition_to("Idle")
 		return
 
-func on_item_input(press: bool, release: bool, aim_vector: Vector2):
+func on_item_input(press: bool, _release: bool, aim_vector: Vector2):
 	# This state only cares about the initial press of the button.
 	if press:
 		var player = state_machine.player
