@@ -95,32 +95,27 @@ func send_movement_input_to_host(direction, holding_jump, wants_jump):
 	client_is_holding_jump = holding_jump
 	if wants_jump: client_wants_to_jump = true
 
-# NEW function to safely handle the entire pickup transaction in one deferred call.
 func handle_pickup(item_pickup_node):
 	var new_item_resource = item_pickup_node.item
-	
-	# 1. If we are already holding an item, drop it first.
 	if self.current_item:
 		self.drop_item()
-		
-	# 2. Equip the new item.
-	self.current_item = new_item_resource
-	if self.current_item.ability_scene:
-		var ability_instance = self.current_item.ability_scene.instantiate()
-		ability_instance.name = self.current_item.ability_scene.get_path().get_file().get_basename()
-		add_child(ability_instance)
-	print("Picked up: ", self.current_item.item_name)
-	
-	# 3. Now that the transaction is complete, safely destroy the item pickup from the ground.
+	_equip_item(new_item_resource)
 	item_pickup_node.queue_free()
+
+func _equip_item(item_resource: ItemResource):
+	current_item = item_resource
+	if current_item.ability_scene:
+		var ability_instance = current_item.ability_scene.instantiate()
+		ability_instance.name = current_item.ability_scene.get_path().get_file().get_basename()
+		add_child(ability_instance)
+	print("Picked up: ", current_item.item_name)
 
 func drop_item():
 	if not current_item:
 		return
-	var ability_node_name = current_item.ability_scene.get_path().get_file().get_basename()
-	var ability_node = find_child(ability_node_name, true, false)
-	if ability_node:
-		ability_node.queue_free()
+	var ability_node = get_node("Chain")
+	if is_instance_valid(ability_node):
+		ability_node.release()
 	if dropped_item_scene:
 		var dropped_item = dropped_item_scene.instantiate()
 		dropped_item.item = current_item
@@ -131,7 +126,6 @@ func drop_item():
 	current_item = null
 	print("Item dropped.")
 
-# The old 'add_item' function is now removed to prevent the buggy logic from being called.
-
+# --- THIS FUNCTION IS NOW COMPLETE ---
 func has_ability(ability_name: String) -> bool:
 	return current_item and current_item.item_name == ability_name

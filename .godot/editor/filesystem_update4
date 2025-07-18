@@ -5,9 +5,3 @@ res://scenes/player.tscn
 res://scenes/Chain.tscn
 res://scenes/item_pickup.tscn
 res://scripts/player.gd
-res://scripts/item_pickup.gd
-res://scripts/idle_state.gd
-res://scripts/jump_state.gd
-res://scripts/move_state.gd
-res://scripts/state.gd
-res://scripts/swing_state.gd
