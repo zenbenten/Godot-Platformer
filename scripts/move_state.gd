@@ -41,16 +41,18 @@ func process_physics(delta: float):
 		return
 
 func on_item_input(press: bool, _release: bool, aim_vector: Vector2):
-	# This state only cares about the initial press of the button.
 	if press:
 		var player = state_machine.player
-		if player.current_item and player.has_ability("Grappling Hook"):
+		# DEBUG: (3) The current state processes the event
+		print("(3) [", self.name, " for Player ", player.name, "] Processing item input. Drop command: ", (aim_vector == Vector2.DOWN))
+		
+		if player.current_item:
 			if aim_vector == Vector2.DOWN:
-				player.drop_item()
+				player.manual_drop_item()
 				return
 			
-			var aim_direction = aim_vector
-			if aim_direction == Vector2.ZERO:
-				aim_direction = Vector2(player.facing_direction, 0)
-				
-			state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})
+			if player.has_ability("Grappling Hook"):
+				var aim_direction = aim_vector
+				if aim_direction == Vector2.ZERO:
+					aim_direction = Vector2(player.facing_direction, 0)
+				state_machine.transition_to("Swing", {"aim_direction": aim_direction.normalized()})

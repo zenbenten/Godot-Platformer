@@ -86,3 +86,6 @@ scale = Vector2(0.500386, 0.500386)
 sprite_frames = SubResource("SpriteFrames_d2wvv")
 animation = &"Idle"
 autoplay = "Idle"
+
+[node name="PickupCooldownTimer" type="Timer" parent="."]
+wait_time = 1.998

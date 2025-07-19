@@ -20,6 +20,8 @@ func shoot(dir: Vector2) -> void:
 
 @rpc("any_peer", "call_local")
 func release() -> void:
+	# DEBUG: (6) The ability is released
+	print("(6) [Chain] release() called. Hiding hook.")
 	flying = false
 	hooked = false
 	self.visible = false 

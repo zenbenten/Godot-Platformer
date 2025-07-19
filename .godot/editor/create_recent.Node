@@ -1,9 +1,9 @@
+Timer
 MultiplayerSpawner
 MultiplayerSynchronizer
 CollisionShape2D
 Area2D
 CharacterBody2D
-Timer
 AnimationPlayer
 AnimationTree
 AnimatedSprite2D

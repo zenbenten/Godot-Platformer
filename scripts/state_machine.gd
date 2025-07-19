@@ -23,6 +23,8 @@ func _ready():
 			return
 		if not initial_state.state_machine:
 			initial_state.state_machine = self
+		# DEBUG: Announce initialization and starting state.
+		print("[StateMachine for Player ", player.name, "] Initialized. Initial state: ", initial_state.name)
 		current_state.enter()
 
 func _input(event: InputEvent):
@@ -47,6 +49,8 @@ func transition_to(state_name: String, msg: Dictionary = {}):
 	if current_state == new_state:
 		return
 	if current_state:
+		# DEBUG: Announce state transition.
+		print("[StateMachine] Transitioning from '", current_state.name, "' to '", new_state.name, "'.")
 		current_state.exit()
 	current_state = new_state
 	current_state.enter(msg)
@@ -54,6 +58,8 @@ func transition_to(state_name: String, msg: Dictionary = {}):
 # NEW: RPC function to receive item input events from the Player script.
 @rpc("any_peer", "call_local")
 func remote_handle_item_input(press: bool, release: bool, aim_vector: Vector2):
+	# DEBUG: (2) The host's State Machine receives the event
+	print("(2) [StateMachine for Player ", player.name, "] Received item input event.")
 	# When an input event is received, pass it to the active state.
 	if current_state:
 		current_state.on_item_input(press, release, aim_vector)
